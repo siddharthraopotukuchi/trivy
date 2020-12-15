@@ -1,0 +1,104 @@
+project_name: trivy
+builds:
+  -
+    main: cmd/trivy/main.go
+    binary: trivy
+    ldflags:
+      - -s -w
+      - "-extldflags '-static'"
+      - -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - freebsd
+      - openbsd
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+      - ppc64le
+    goarm:
+      - 7
+    ignore:
+      - goos: darwin
+        goarch: 386
+
+nfpms:
+  -
+    formats:
+      - deb
+      - rpm
+    vendor: "aquasecurity"
+    homepage: "https://github.com/aquasecurity"
+    maintainer: "Teppei Fukuda <knqyf263@gmail.com>"
+    description: "A Fast Vulnerability Scanner for Containers"
+    license: "Apache-2.0"
+    file_name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
+    replacements:
+      amd64: 64bit
+      386: 32bit
+      arm: ARM
+      arm64: ARM64
+      ppc64le: PPC64LE
+      darwin: macOS
+      linux: Linux
+      openbsd: OpenBSD
+      netbsd: NetBSD
+      freebsd: FreeBSD
+      dragonfly: DragonFlyBSD
+
+archives:
+  -
+    format: tar.gz
+    name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
+    replacements:
+      amd64: 64bit
+      386: 32bit
+      arm: ARM
+      arm64: ARM64
+      ppc64le: PPC64LE
+      darwin: macOS
+      linux: Linux
+      openbsd: OpenBSD
+      netbsd: NetBSD
+      freebsd: FreeBSD
+      dragonfly: DragonFlyBSD
+    files:
+      - README.md
+      - LICENSE
+      - contrib/*.tpl
+
+
+brews:
+  -
+    github:
+      owner: aquasecurity
+      name: homebrew-trivy
+    homepage: "https://github.com/aquasecurity/trivy"
+    description: ""
+    test: |
+      system "#{bin}/program --version"
+
+dockers:
+  - image_templates:
+      - "docker.io/aquasec/trivy:{{ .Version }}"
+      - "docker.io/aquasec/trivy:latest"
+      - "ghcr.io/aquasecurity/trivy:{{ .Version }}"
+      - "ghcr.io/aquasecurity/trivy:latest"
+    binaries:
+      - trivy
+    build_flag_templates:
+      - "--label=org.label-schema.schema-version=1.0"
+      - "--label=org.label-schema.name={{ .ProjectName }}"
+      - "--label=org.label-schema.description=A Fast Vulnerability Scanner for Containers"
+      - "--label=org.label-schema.vendor=Aqua Security"
+      - "--label=org.label-schema.version={{ .Version }}"
+      - "--label=org.label-schema.build-date={{ .Date }}"
+      - "--label=org.label-schema.vcs=https://github.com/aquasecurity/trivy"
+      - "--label=org.label-schema.vcs-ref={{ .FullCommit }}"
+    extra_files:
+    - contrib/
+
